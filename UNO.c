@@ -7,588 +7,531 @@
 #include <time.h>
 #include <errno.h>
 #include <unistd.h>
+#include "manejo_archivos.h"
 
 
 /*---===PROTOTIPOS===---*/
 
-void inicio();
+
+void efecto(char* ENVIO,char* tipo);
 /*****
-* void inicio
+* void efecto
 ******
-* prepara los archivos y carpetas necesarios para el inicio del juego
+* Entrega el efecto que tendra la carta sobre el siguiente jugador
 ******
 * input:
-*	none
-*
+*	char* ENVIO : Variable donde se guarda el efecto
+*	char* tipo  : Es el efecto de la carta
 ******
 * returns:
 *	none
 *****/
 
-void repartir(int cantidad,char* mazo_jugador,char* mazo_origen);
+void JUGADOR(char* nombre,char* mazo);
 /*****
-* void repartir
+* void JUGADOR
 ******
-* le da a un jugador una cantidad dada de cartas de forma aleatoria
+* Detecta al jugador en turno y lo guarda en una variable
 ******
 * input:
-*	int cantidad	  : numero de cartas a dar
-*	char* mazo_jugador: directorio donde se encuentra el mazo del jugador
-*	char* mazo_origen : directorio donde se encuentra el mazo principal
+*	char* nombre: variable en donde se guarda el nombre jugador en turno
+*	char* mazo  : mazo del jugador en turno
 ******
 * returns:
 *	none
 *****/
 
-void transferir_cartas(char** cartas,int* seleccion_cartas,char* mazo_origen,char* mazo_destino,int cantidad);
+void UNO();
 /*****
-* void transferir_cartas
+* void UNO
 ******
-* transfiere una cantidad dada de cartas de un mazo origen a uno destino
+* Detecta a los jugadores con una sola carta y los imprime por consola
 ******
 * input:
-*	char** cartas	     : arreglo de strings que contiene los nombres de los archivos de texto de un mazo origen
-*	int* seleccion_cartas: arreglo de enteros que contiene los indices de las cartas a transferir
-*	char* mazo_origen    : directorio donde se encuentra el mazo origen
-*	char* mazo_destino   : directorio donde se encuentra el mazo destino
-*	int cantidad         : numero de cartas a transferir
+*	none
 ******
 * returns:
 *	none
 *****/
 
-void ver_cartas(char** mazo,int cantidad);
+void jugada_anterior_datos(char* DATO1,char* DATO2,char* jugada_anterior);
 /*****
-* void ver_cartas
+* void jugada_anterior_datos
 ******
-* muestra las cartas de un mazo con sus respectivos indices +1
+* Procesa la jugada anterior y guarda los datos importantes en dos variables
 ******
 * input:
-*	char** mazo	     : arreglo de strings que contiene los nombres de los archivos de texto de un mazo
-*	int cantidad         : numero de cartas en el mazo
+*	char* DATO1	     : variable en donde se guarda el tipo de jugada anterior(NORMAL, SALTO ,+2 ,+4)
+*	char* DATO2	     : variable en donde se guarda el dato extra de la jugada anterior(Color: rojo, azul, etc; NORMAL: 0)
+*	char* jugada_anterior: Dato de la jugada anterior
 ******
 * returns:
 *	none
 *****/
 
-void quitar_ultima_carta(char* last_card);
+void jugada(char* ENVIO,char* mazo_jugador,char* mazo_destino,char* mazo_origen,char* tipo_ja,char* dato_ja);
 /*****
-* void quitar_ultima_carta
+* void jugada
 ******
-* elimina la unica carta ubicada en la carpeta last_card
+* Permite al jugador en turno realizar su jugada segun el efecto de la jugada anterior
 ******
 * input:
-*	char* last_card: directorio donde se encuentra la carpeta last_card
+*	char* ENVIO	  : variable en donde se guarda el efecto que tendra la jugada actual sobre la siguiente
+*	char* mazo_jugador: Mazo del jugador en turno
+*	char* mazo_destino: Carpeta donde se encuentra la ultima carta jugada
+*	char* mazo_origen : Mazo principal
+*	char* tipo_ja	  : Efecto de la jugada anterior
+*	char* dato_ja	  : Efecto extra de la jugada anterior 
 ******
 * returns:
 *	none
 *****/
 
-void dar_carta(char* nombre_carta,char* mazo);
+
+char* menu_jugador(char* mazo_jugador,char* mazo_destino,char* mazo_origen,char* jugada_anterior);
 /*****
-* void dar_carta
+* char* menu_jugador
 ******
-* crea una carta en un mazo dado
+* Prepara el turno de un jugador, detecta si le queda una carta o si ya no le queda ninguna, y retorna el efecto de la jugada actual
 ******
 * input:
-*	char* nombre_carta: nombre del archivo de texto que representa a una carta
-*	char* mazo	  : directorio de un mazo
+*	char* mazo_jugador   : Mazo del jugador en turno
+*	char* mazo_destino   : Carpeta donde se encuentra la ultima carta jugada
+*	char* mazo_origen    : Mazo principal
+*	char* jugada_anterior: Efecto de la jugada anterior
 ******
 * returns:
-*	none
+*	char* : Efecto de la jugada actual
 *****/
 
-void quitar_carta(char* nombre_carta,char* mazo);
+char** color_tipo(char* carta);
 /*****
-* void quitar_carta
+* char** color_tipo
 ******
-* elimina una carta de un mazo dado
+* Extrae de una carta su color y su tipo
 ******
 * input:
-*	char* nombre_carta: nombre del archivo de texto que representa a una carta
-*	char* mazo	  : directorio de un mazo
+*	char* carta: nombre del archivo de texto de la carta
 ******
 * returns:
-*	none
+*	char**: arreglo de tamaño 2 con el color y el tipo de la carta
 *****/
-
-void crear_cartas_iniciales(char* nombre_cartas);
-/*****
-* void crear_cartas_iniciales
-******
-* crea todas las cartas del juego
-******
-* input:
-*	char* nombre_carta: nombre del archivo de texto que contiene el nombre de cada carta a crear
-******
-* returns:
-*	none
-*****/
-
-void crear_carta(char* nombre_carta);
-/*****
-* void crear_carta
-******
-* crea el archivo de texto para una carta
-******
-* input:
-*	char* nombre_carta: nombre de la carta
-******
-* returns:
-*	none
-*****/
-
-void crear_carpetas(char** directorios,int cantidad);
-/*****
-* void crear_carpetas
-******
-* crea las carpetas necesarias para el funcionamiento del programa
-******
-* input:
-*	char** directorio: arreglo con los directorios de cada carpeta
-*	int cantidad     : cantidad de carpetas a crear
-******
-* returns:
-*	none
-*****/
-
-void liberar_memoria(char** lista,int size);
-/*****
-* void liberar_memoria
-******
-* libera la memoria utilizada por un arreglo de strings
-******
-* input:
-*	char** lista: arreglo de strings
-*	int size    : cantidad de strings en el arreglo
-******
-* returns:
-*	none
-*****/
-
-void ver_archivos(char* directorio);
-/*****
-* void ver_archivos
-******
-* muestra los archivos que se encuentran en una carpeta
-******
-* input:
-*	char* directorio: nombre del directorio
-******
-* returns:
-*	none
-*****/
-
-char** dar_mazo(char* directorio,int cantidad);
-/*****
-* char** dar_mazo
-******
-* entrega un arreglo con los nombres de cada archivo de texto (carta) en un mazo dado
-******
-* input:
-*	char* directorio: directorio del mazo
-*	int cantidad    : cantidad de cartas en el mazo
-******
-* returns:
-*	char** : arreglo con los nombres de cada carta en el mazo
-*****/
-
-
-
-int contar_cartas(char* mazo);
-/*****
-* int contar_cartas
-******
-* cuenta la cantidad de cartas que se encuentra en un mazo
-******
-* input:
-*	char* mazo: directorio del mazo
-******
-* returns:
-*	int : cantidad de cartas en el mazo
-*****/
-
-int * seleccion_aleatoria(int N,int tamano_mazo);
-/*****
-* int* seleccion_aleatoria
-******
-* selecciona N enteros (indices) de forma aleatoria con un valor maximo dado
-******
-* input:
-*	int N	       : cantidad a seleccionar
-*	int tamano_mazo: valor maximo
-******
-* returns:
-*	int* : arreglo con los enteros obtenidos
-*****/
-
-
-
 
 int main()
 {
-	
-	char** mazo;
-	int tamano;
+	char jugada_anterior[20];
+	char ENVIO[20];
+	char** ultima_carta;
+	char** datos;
 
 	inicio();
-
-	printf("---===MAZO PRINCIPAL===---\n");
-	ver_archivos("mazo/");
-	printf("---======---\n");
+	
+	ultima_carta=dar_mazo("last_card/",1);
+	//se extraen los datos de la ultima carta
+	datos=color_tipo(ultima_carta[0]);
+	//se aplican los efectos de esta carta 
+	efecto(jugada_anterior,datos[1]);
+	
+	//se inicia la jugada del jugador 1 y luego se guarda el efecto de su jugada 
+	strcpy(ENVIO,menu_jugador("player1/","last_card/","mazo/",jugada_anterior));
+	
+	printf("El siguiente jugador recibira: %s\n",ENVIO);
 	sleep(1);
-	printf("---===MAZO JUGADOR 1===---\n");
-	ver_archivos("player1/");
-	printf("---======---\n");
-	sleep(1);
-	printf("---===MAZO JUGADOR 2===---\n");
-	ver_archivos("player2/");
-	printf("---======---\n");
-	sleep(1);
-	printf("---===MAZO JUGADOR 3===---\n");
-	ver_archivos("player3/");
-	printf("---======---\n");
-	sleep(1);
-	printf("---===MAZO JUGADOR 4===---\n");
-	ver_archivos("player4/");
-	printf("---======---\n");
-	sleep(1);
-	printf("---===ULTIMA CARTA===---\n");
-	ver_archivos("last_card/");
-	printf("---======---\n");
-	sleep(1);
-
-	printf("---===JUGADOR1===---\n");
-	tamano=contar_cartas("player1/");
-	mazo=dar_mazo("player1/",tamano);
-	ver_cartas(mazo,tamano);
-	printf("---======---\n");
+	//se inicia la jugada del jugador 2
+	menu_jugador("player1/","last_card/","mazo/",ENVIO);
+	
 	return 0;
 }
 
-
-void inicio()
+void efecto(char* ENVIO,char* tipo)
 {
-	char *directorios[]={"mazo/","player1/","player2/","player3/","player4/","last_card/"};
-	char** MAZO;
-	int SIZE;
-	int* SELECCION;
-
-	srand(time(NULL));	
-
-	crear_carpetas(directorios,6);
+	int opcion;
 	
-	crear_cartas_iniciales("nombre_cartas.txt");
-
-	/*reparte cartas a cada jugador*/
-	repartir(7,"player1/","mazo/");
-	repartir(7,"player2/","mazo/");
-	repartir(7,"player3/","mazo/");
-	repartir(7,"player4/","mazo/");
 	
-	SIZE=contar_cartas("mazo/");
-	MAZO=dar_mazo("mazo/",SIZE);
-	SELECCION=seleccion_aleatoria(1,SIZE);
-
-	/*transfiere la carta inicial*/
-	transferir_cartas(MAZO,SELECCION,"mazo/","last_card/",1);
-
-	liberar_memoria(MAZO,SIZE);
-	free(SELECCION);
-
-}
-
-void repartir(int cantidad,char* mazo_jugador,char* mazo_origen)
-{
-	char** lista_cartas;
-	int tamano_mazo;
-	int* seleccion_cartas;
-
-	tamano_mazo=contar_cartas(mazo_origen);
-	
-	lista_cartas=dar_mazo(mazo_origen,tamano_mazo);
-	
-	seleccion_cartas=seleccion_aleatoria(cantidad,tamano_mazo);
-	
-	transferir_cartas(lista_cartas,seleccion_cartas,mazo_origen,mazo_jugador,cantidad);
-
-	liberar_memoria(lista_cartas,tamano_mazo);
-
-	free(seleccion_cartas);
-}
-
-void transferir_cartas(char** cartas,int* seleccion_cartas,char* mazo_origen,char* mazo_destino,int cantidad)
-{
-	int i;
-	for(i=0;i<cantidad;i++)
+	if(strcmp(tipo,"+2")==0	)//carta de tipo +2 aplica el efecto +2_0
 	{
-		dar_carta(cartas[seleccion_cartas[i]],mazo_destino);
-		quitar_carta(cartas[seleccion_cartas[i]],mazo_origen);
+		strcpy(ENVIO,"+2_0");
 	}
-	
-	
-}
-
-void ver_cartas(char** mazo,int cantidad)
-{
-	int i=0;
-	char temp1[30];
-	char *temp2;
-	char color[10];
-	char tipo[10];
-	
-			
-	while(i<cantidad)
+	else if(strcmp(tipo,"+4")==0)//carta de tipo +4 aplica el efecto +4_color, el color es escogido por el jugador
 	{
-		strcpy(temp1,mazo[i]);
-		/*split del string*/
-		temp2=strtok(temp1,"_");
-		strcpy(color,temp2);
-		temp2=strtok(NULL,"_");
-		strcpy(tipo,temp2);
-
-		printf("%d: %s %s.\n",i+1,color,tipo);
-		
-		i++;
-
-	}
-
-
-
-
-}
-
-void quitar_ultima_carta(char* last_card)
-{
-	char** carta;
-
-	carta=dar_mazo(last_card,1);
-	quitar_carta(carta[0],last_card);
-
-}
-
-void dar_carta(char* nombre_carta,char* mazo)
-{
-	char temp[30];
-
-	strcpy(temp,mazo);
-	strcat(temp,nombre_carta);
-
-	FILE* fp=fopen(temp,"w");
-	fclose(fp);
-	
-}
-
-void quitar_carta(char* nombre_carta,char* mazo)
-{
-	char temp[30];
-
-	strcpy(temp,mazo);
-	strcat(temp,nombre_carta);
-	remove(temp);
-}
-
-void crear_cartas_iniciales(char* nombre_cartas)
-{
-	FILE* fp=fopen(nombre_cartas,"r");
-	char name[20];
-	
-	
-	while (feof(fp)==0)
-	{
-		
-		fscanf(fp,"%s\n",name);
-		crear_carta(name);
-	
-	}
-
-	fclose(fp);
-	
-}
-
-void crear_carta(char* nombre_carta)
-{
-	char directorio[30];
-	strcpy(directorio, "mazo/");
-	strcat(directorio,nombre_carta);
-	strcat(directorio,".txt");
-	FILE* fp=fopen(directorio,"w");
-	fclose(fp);
-
-
-
-}
-
-void crear_carpetas(char** directorios,int cantidad)
-{
-	int i;
-	DIR* dir;
-	
-	for (i=0;i<cantidad;i++)
-	{
-		dir=opendir(directorios[i]);
-		/*verifica si el directorio no esta creado*/
-		if(ENOENT==errno)
+		printf("Color :\n1.-Azul\n2.-Rojo\n3.-Verde\n4.-Amarillo\nEscoger: ");
+		scanf("%d",&opcion);
+		if(opcion==1)
 		{
-			if(mkdir(directorios[i],0777)==-1)
-			{
-				printf("--==Error al crear carpeta %s==--\n",directorios[i]);
-			}
+			strcpy(ENVIO,"+4_azul");
 		}
-		closedir(dir);
-		
-	}
-}
-
-void liberar_memoria(char** lista,int size)
-{
-	
-	int i=0;
-	
-	while(i<size)
-	{
-	
-		free(lista[i]);
-		i++;
-	
-	}
-	
-	free(lista);
-
-}
-
-void ver_archivos(char* directorio)
-{
-	DIR* dir;
-	struct dirent* ent;
-	dir=opendir(directorio);
-
-	while((ent=readdir(dir))!=NULL)
-	{	
-		
-		if(strcmp(ent->d_name,".")!=0 && strcmp(ent->d_name,"..")!=0)
+		else if(opcion==2)
 		{
-			printf("%s\n",ent->d_name);
-			
+			strcpy(ENVIO,"+4_rojo");
+		}
+		else if(opcion==3)
+		{
+			strcpy(ENVIO,"+4_verde");
+		}
+		else
+		{
+			strcpy(ENVIO,"+4_amarillo");
 		}
 	}
-	closedir(dir);
-}
-
-char** dar_mazo(char* directorio,int cantidad)
-{
-	DIR* dir;
-	struct dirent* ent;
-	dir=opendir(directorio);
-
-	char** lista=(char**)malloc(sizeof(char*)*cantidad);
-	int i=0;
-
-	if (lista==NULL)
+	else if(strcmp(tipo,"Reversa")==0)//carta de tipo Reversa aplica el efecto REVERSA_0, afectara la direccion de envio de los pipes
 	{
-		printf("--==Memory not allocated (dar_mazo)==--\n");
+		strcpy(ENVIO,"REVERSA_0");
 	}
-
-	while((ent=readdir(dir))!=NULL)
-	{	
-		
-		if(strcmp(ent->d_name,".")!=0 && strcmp(ent->d_name,"..")!=0)
+	else if(strcmp(tipo,"Salto")==0)//carta de tipo Salto aplica el efecto SALTO_0
+	{
+		strcpy(ENVIO,"SALTO_0");
+	}
+	else if(strcmp(tipo,"Colores")==0)//carta de tipo Colores aplica el efecto NORMAL_color, el color es escogido por el jugador
+	{
+		printf("Color :\n1.-Azul\n2.-Rojo\n3.-Verde\n4.-Amarillo\nEscoger: ");
+		scanf("%d",&opcion);
+		if(opcion==1)
 		{
-
-			lista[i]=(char*)malloc(sizeof(char)*30);
-			
-			if (lista[i]==NULL)
-			{
-				printf("--==Memory not allocated (dar_mazo)==--\n");
-			}
-
-			strcpy(lista[i],ent->d_name);
-			
-			i++;
+			strcpy(ENVIO,"NORMAL_azul");
+		}
+		else if(opcion==2)
+		{
+			strcpy(ENVIO,"NORMAL_rojo");
+		}
+		else if(opcion==3)
+		{
+			strcpy(ENVIO,"NORMAL_verde");
+		}
+		else
+		{
+			strcpy(ENVIO,"NORMAL_amarillo");
 		}
 	}
-	closedir(dir);
-	return lista;
-}
-
-
-
-int contar_cartas(char* mazo)
-{
-	DIR* dir;
-	struct dirent* ent;
-	dir=opendir(mazo);
-
-	int contador=0;
-
-	while((ent=readdir(dir))!=NULL)
-	{	
-		
-		if(strcmp(ent->d_name,".")!=0 && strcmp(ent->d_name,"..")!=0)
-		{
-			contador++;
-			
-			
-		}
+	else//aqui entran las cartas normales de la forma <color numero>, aplican un efecto NORMAL_0
+	{
+		strcpy(ENVIO,"NORMAL_0");
 	}
-	closedir(dir);
-	return contador;
 }
 
-
-int * seleccion_aleatoria(int N,int tamano_mazo)
+void JUGADOR(char* nombre,char* mazo)
 {
-	int i=0;
-	int j;
+	if(mazo[6]=='1')
+	{
+		strcpy(nombre,"Jugador 1");
+	}
+	else if(mazo[6]=='2')
+	{
+		strcpy(nombre,"Jugador 2");
+	}
+	else if(mazo[6]=='3')
+	{
+		strcpy(nombre,"Jugador 3");
+	}
+	else
+	{
+		strcpy(nombre,"Jugador 4");
+	}
+
+}
+
+void UNO()
+{
 	int flag=1;
-	int temp;
-	int *numeros=(int *)malloc(sizeof(int)*N);
-
 	
+	if(contar_cartas("player1/")==1){
+		printf("<Jugador 1>\n");
+		flag=0;
+	}
+	if(contar_cartas("player1/")==1){
+		printf("<Jugador 2>\n");
+		flag=0;
+	}
+	if(contar_cartas("player1/")==1){
+		printf("<Jugador 3>\n");
+		flag=0;
+	}
+	if(contar_cartas("player1/")==1){
+		printf("<Jugador 4>\n");
+		flag=0;
+	}	
 
-	if (numeros==NULL)
+	if(flag)
 	{
-		printf("--==Memory not allocated(seleccion_aleatoria)==--\n");
+		printf("Nadie\n");
 	}
 
-	while(i<N)
-	{
-		temp=rand() % tamano_mazo;
+}
 
-		/*verifica si el numero no esta repetido*/
-		for(j=0;j<i;j++)
+void jugada_anterior_datos(char* DATO1,char* DATO2,char* jugada_anterior)
+{
+	char temp1[30];
+	char* temp2;
+
+	strcpy(temp1,jugada_anterior);
+
+	temp2=strtok(temp1,"_");
+	
+	strcpy(DATO1,temp2);
+	
+	temp2=strtok(NULL,"_");
+	
+	strcpy(DATO2,temp2);
+}
+
+void jugada(char* ENVIO,char* mazo_jugador,char* mazo_destino,char* mazo_origen,char* tipo_ja,char* dato_ja)
+{
+	char** ultima_carta;
+	char** lista_cartas_jugador;
+	char** lista_cartas_origen;
+	char** datos_ultima_carta;
+	char** datos_carta_escogida;
+	int carta_escogida[1];
+	int *carta_aleatoria;
+	int tamano_mazo_jugador;
+	int tamano_mazo_origen;
+	int flag=1;
+	int opcion;
+
+	ultima_carta=dar_mazo(mazo_destino,1);
+
+	printf("--==Jugadores con una carta==--\n");
+	UNO();
+	printf("--====--\n");
+	
+	printf("--==Ultima Carta==--\n");
+	ver_cartas(ultima_carta,1);
+	printf("--====--\n");
+
+	if(strcmp(dato_ja,"0")!=0)
+	{
+		printf("--==Color Escogido: %s==--\n",dato_ja);
+	}
+
+	//un efecto NORMAL es aquel que no interrumpe y permiten al jugador interactuar con su mazo
+	if(strcmp(tipo_ja,"NORMAL")==0)
+	{
+		
+		tamano_mazo_jugador=contar_cartas(mazo_jugador);
+		tamano_mazo_origen=contar_cartas(mazo_origen);
+			
+		lista_cartas_jugador=dar_mazo(mazo_jugador,tamano_mazo_jugador);
+		lista_cartas_origen=dar_mazo(mazo_origen,tamano_mazo_origen);
+		
+		datos_ultima_carta=color_tipo(ultima_carta[0]);
+			
+		printf("--==MAZO==--\n");
+		ver_cartas(lista_cartas_jugador,tamano_mazo_jugador);
+		printf("0.- Tomar carta del mazo.\n");
+		printf("--====--\n");
+		
+
+		while(flag)
 		{
-			if (temp == numeros[j])
+			
+			printf("Escoger :");
+			scanf("%d",&carta_escogida[0]);
+			carta_escogida[0]--;//se adapta el indice escogido al arreglo
+			
+			if(carta_escogida[0]>=0)
 			{
-				flag=0;
+				datos_carta_escogida=color_tipo(lista_cartas_jugador[carta_escogida[0]]);
+					
+				if(strcmp(datos_carta_escogida[0],datos_ultima_carta[0])==0 || //¿El color de la carta escogida es igual al de la ultima carta puesta?
+				   strcmp(datos_carta_escogida[1],datos_ultima_carta[1])==0 || //¿El numero de la carta escogida es igual al de la ultima carta puesta?
+				   strcmp(datos_carta_escogida[0],dato_ja)==0		    || //¿El color de la carta escogida es igual al color escogido por el jugador anterior(carta negra colores o +4)?
+				   strcmp(datos_carta_escogida[0],"negro")==0		      )//¿El color de la carta escogida es negra?
+				{
+					flag=0;//se rompe el ciclo
+					//se quita la ultima carta puesta
+					quitar_ultima_carta(mazo_destino);			
+					//se transfiere la carta obtenida al puesto de la ultima carta
+					transferir_cartas(lista_cartas_jugador,carta_escogida,mazo_jugador,mazo_destino,1);
+					//se aplica el efecto de la carta escogida en ENVIO para el proximo jugador
+					efecto(ENVIO,datos_carta_escogida[1]);
+			
+					/*  <<liberar memoria>>*/
+					liberar_memoria(lista_cartas_jugador,tamano_mazo_jugador);
+					liberar_memoria(lista_cartas_origen,tamano_mazo_origen);
+					liberar_memoria(ultima_carta,1);
+					liberar_memoria(datos_ultima_carta,2);	
+					liberar_memoria(datos_carta_escogida,2);
+					/*<<>>*/	
+				}
+				else
+				{
+					printf("--==Carta invalida==--\n");//La carta escogida no es valida
+				}
 			}
-
-		}
-		if (flag)
-		{
-			numeros[i]=temp;
-			i++;
-		}
-		flag=1;
-	}
+			else
+			{
+				carta_aleatoria=seleccion_aleatoria(1,tamano_mazo_origen);
 	
-	return numeros;
+				datos_carta_escogida=color_tipo(lista_cartas_origen[carta_aleatoria[0]]);
+
+				if(strcmp(datos_carta_escogida[0],datos_ultima_carta[0])==0 ||//¿El color de la carta obtenida es igual al de la ultima carta puesta?
+				   strcmp(datos_carta_escogida[1],datos_ultima_carta[1])==0 ||//¿El numero de la carta obtenida es igual al de la ultima carta puesta? 
+				   strcmp(datos_carta_escogida[0],dato_ja)==0		    ||//¿El color de la carta obtenida es igual al color escogido por el jugador anterior(carta negra colores o +4)?
+				   strcmp(datos_carta_escogida[0],"negro")==0			)//¿El color de la carta obtenida es negra?
+				{
+					printf("Carta Obtenida: %s %s\n",datos_carta_escogida[0],datos_carta_escogida[1]);
+					printf("¿Colocar?\n1.- SI.\n2.- NO.\n");
+					scanf("%d",&opcion);
+					
+										
+
+					if(opcion==1)
+					{	//se quita la ultima carta puesta
+						quitar_ultima_carta(mazo_destino);
+						//se transfiere la carta obtenida al puesto de la ultima carta
+						transferir_cartas(lista_cartas_origen,carta_aleatoria,mazo_origen,mazo_destino,1);
+						efecto(ENVIO,datos_carta_escogida[1]);
+
+						/*  <<liberar memoria>>*/
+						liberar_memoria(lista_cartas_jugador,tamano_mazo_jugador);
+						liberar_memoria(lista_cartas_origen,tamano_mazo_origen);
+						liberar_memoria(ultima_carta,1);
+						liberar_memoria(datos_ultima_carta,2);	
+						liberar_memoria(datos_carta_escogida,2);
+						free(carta_aleatoria);
+						/*<<>>*/
+
+						flag=0;//se rompe el ciclo
+					}
+					else
+					{	
+						// se transfiere la carta obtenida al mazo del jugador
+						transferir_cartas(lista_cartas_origen,carta_aleatoria,mazo_origen,mazo_jugador,1);
+						strcpy(ENVIO,"NORMAL_");
+						strcat(ENVIO,dato_ja);
+						
+						/*  <<liberar memoria>>*/
+						liberar_memoria(lista_cartas_jugador,tamano_mazo_jugador);
+						liberar_memoria(lista_cartas_origen,tamano_mazo_origen);
+						liberar_memoria(ultima_carta,1);
+						liberar_memoria(datos_ultima_carta,2);	
+						liberar_memoria(datos_carta_escogida,2);
+						free(carta_aleatoria);
+						/*<<>>*/
+	
+						flag=0;//se rompe el ciclo
+					}
+				}
+				else
+				{
+					
+					printf("Carta Obtenida: %s %s\n",datos_carta_escogida[0],datos_carta_escogida[1]);
+					// se transfiere la carta obtenida al mazo del jugador
+					transferir_cartas(lista_cartas_origen,carta_aleatoria,mazo_origen,mazo_jugador,1);
+					//se transfiere el efecto de la ultima carta para el proximo jugador
+					strcpy(ENVIO,"NORMAL_");
+					strcat(ENVIO,dato_ja);
+
+					/*  <<liberar memoria>>*/
+					liberar_memoria(lista_cartas_jugador,tamano_mazo_jugador);
+					liberar_memoria(lista_cartas_origen,tamano_mazo_origen);
+					liberar_memoria(ultima_carta,1);
+					liberar_memoria(datos_ultima_carta,2);	
+					liberar_memoria(datos_carta_escogida,2);
+					free(carta_aleatoria);
+					/*<<>>*/
+					flag=0;//se rompe el ciclo
+				}
+			}
+		}
+		
+	}
+	else// estos efectos si interrumpen la jugada {+2,+4,SALTO}
+	{
+		if(strcmp(tipo_ja,"+2")==0)
+		{
+			printf("--==El jugador toma dos cartas y termina su turno==--\n");
+
+			tamano_mazo_origen=contar_cartas(mazo_origen);
+			lista_cartas_origen=dar_mazo(mazo_origen,tamano_mazo_origen);
+			//se seleccionan 2 indices de cartas del mazo principal
+			carta_aleatoria=seleccion_aleatoria(2,tamano_mazo_origen);
+			//se transfieren esas dos cartas al mazo del jugador
+			transferir_cartas(lista_cartas_origen,carta_aleatoria,mazo_jugador,mazo_destino,2);
+			//se cambia el efecto de la jugada anterior
+			strcpy(ENVIO,"NORMAL_0");
+			//se libera memoria
+			liberar_memoria(lista_cartas_origen,tamano_mazo_origen);
+			free(carta_aleatoria);
+		}
+		else if(strcmp(tipo_ja,"+4")==0)
+		{
+			printf("--==El jugador toma cuatro cartas y termina su turno==--\n");
+			tamano_mazo_origen=contar_cartas(mazo_origen);
+			lista_cartas_origen=dar_mazo(mazo_origen,tamano_mazo_origen);
+			//se seleccionan 4 indices de cartas del mazo principal
+			carta_aleatoria=seleccion_aleatoria(4,tamano_mazo_origen);
+			//se transfieren esas 4 cartas al mazo del jugador
+			transferir_cartas(lista_cartas_origen,carta_aleatoria,mazo_jugador,mazo_destino,4);
+			//se cambia el tipo de jugada pero se mantiene el efecto extra de la jugada anterior(color escogido por el jugador anterior)
+			strcpy(ENVIO,"NORMAL_");
+			strcat(ENVIO,dato_ja);
+			//se libera memoria
+			liberar_memoria(lista_cartas_origen,tamano_mazo_origen);
+			free(carta_aleatoria);
+		}
+		else/*salto*/
+		{
+			printf("--==El jugador salta su turno==--\n");
+			//se salta el turno y se cambia el efecto
+			strcpy(ENVIO,"NORMAL_0");
+		}
+	}
 
 }
 
 
+char* menu_jugador(char* mazo_jugador,char* mazo_destino,char* mazo_origen,char* jugada_anterior)
+{
+	
+	char *ENVIO=(char*)malloc(sizeof(char)*20);
+	char DATO1[10];
+	char DATO2[10];
+	char jugador[10];
+	int cantidad;
+	
+	//Se detecta el jugador en turno
+	JUGADOR(jugador,mazo_jugador);
+	
+	printf("--==Turno del %s==--\n",jugador);
+	//se extraen los datos de la jugada anterior
+	jugada_anterior_datos(DATO1,DATO2,jugada_anterior);
+	//se inicia la jugada para el jugador en turno
+	jugada(ENVIO,mazo_jugador,mazo_destino,mazo_origen,DATO1,DATO2);
+	
+	cantidad=contar_cartas(mazo_jugador);
+	//Si el jugador se queda con una carta se imprime UNO, si le queda ninguna se aplica un efecto especial que a futuro terminara el juego anunciando al ganador
+	if(cantidad==1)
+	{	
+		printf("¡¡¡¡¡UNO!!!!!\n");
+	}
+	else if(cantidad==0)
+	{
+		strcpy(ENVIO,"WIN_0");
+	}
 
 
+	return ENVIO;
+}
 
 
+char** color_tipo(char* carta)
+{
+	char** CT=malloc(sizeof(char*)*2);
+	char temp1[30];
+	char* temp2;
+	
+	CT[0]=(char*)malloc(sizeof(char)*10);
+	CT[1]=(char*)malloc(sizeof(char)*10);
+	
+	strcpy(temp1,carta);
 
-
-
-
-
-
-
-
-
-
-
+	temp2=strtok(temp1,"_");
+	
+	strcpy(CT[0],temp2);
+	
+	temp2=strtok(NULL,"_");
+	
+	strcpy(CT[1],temp2);
+	
+	return CT;
+}

@@ -1,10 +1,13 @@
-FILE=UNO
 
-programa: $(FILE).o
-	gcc -o programa $(FILE).o
 
-UNO.o: $(FILE).c
-	gcc -c $(FILE).c
+programa: UNO.o manejo_archivos.o
+	gcc -o programa UNO.o manejo_archivos.o
+
+UNO.o: UNO.c
+	gcc -c UNO.c
+
+manejo_archivos.o: manejo_archivos.c manejo_archivos.h
+	gcc -c manejo_archivos.c
 
 clean:
 	rm -f programa *.o
